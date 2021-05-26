@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "Teste_Rabbit": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
