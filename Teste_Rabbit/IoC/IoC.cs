@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using RabbitMQ.Client;
-using System;
 using Teste_Rabbit.Configurations;
 using Teste_Rabbit.Infra;
 using Teste_Rabbit.Interfaces;
@@ -26,21 +24,6 @@ namespace Teste_Rabbit.IoC
             services.AddSingleton<IProducerRabbit, ProducerRabbit>();
             services.AddSingleton(configuration.GetSection(RABBIT_PRODUCER).Get<RabbitProducer>());
 
-            return services;
-        }
-
-        public static IServiceCollection AddConsumerRabit(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddSingleton<IConnectionFactory>(_ =>
-            new ConnectionFactory
-            {
-                DispatchConsumersAsync=true,
-                HostName="localhost",
-                Port=5678,
-                UserName="guest",
-                Password="guest",
-                RequestedHeartbeat=new TimeSpan(0, 0, 60)
-            });
             return services;
         }
     }

@@ -15,6 +15,8 @@ namespace Teste_Rabbit.Infra
     public class ConsumerRabbit : IConsumerRabbit
     {
         private readonly string _queueName;
+        private readonly string _deadLetterQueueName;
+        private readonly string _deadLetterExchangeName;
         private readonly ConnectionFactory _connectionFactory;
         EventingBasicConsumer _consumer;
         private IModel _channel { get; set; }
@@ -34,6 +36,8 @@ namespace Teste_Rabbit.Infra
         public ConsumerRabbit(RabbitConsumer rabbitConfig)
         {
             _queueName = rabbitConfig.QueueName;
+            _deadLetterQueueName = rabbitConfig.DeadLetterQueue;
+            _deadLetterExchangeName = rabbitConfig.DeadLetterExchange;
             _connectionFactory = new ConnectionFactory
             {
                 HostName = rabbitConfig.HostName,
@@ -52,7 +56,7 @@ namespace Teste_Rabbit.Infra
             _consumer = new EventingBasicConsumer(Channel);
             _consumer.Received += (model, ea) =>
             {
-                //a mensaem primeiro é decodificada para string para só depois ser convertida na classe que será usada
+                //a mensagem primeiro é decodificada para string para só depois ser convertida na classe que será usada
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
@@ -62,7 +66,6 @@ namespace Teste_Rabbit.Infra
 
                     //chama o método do Service passando a mensagem que recebeu
                     dequeue(formatedMessage, ea);
-
                 }
                 catch
                 {
@@ -85,7 +88,7 @@ namespace Teste_Rabbit.Infra
             //precisa linkar a fila com uma dead-letter, assim, se der erro na mensagem, ela é automaticamente
             // enviada para a fila dessa dead-letter, não é perdida nem fica sendo lida infinitamente
             var args = new Dictionary<string, object>();
-            args.Add("x-dead-letter-exchange", "deadletter.exchangeteste");
+            args.Add("x-dead-letter-exchange", _deadLetterExchangeName);
 
             Channel.QueueDeclare(
                         queue: _queueName,
@@ -101,14 +104,14 @@ namespace Teste_Rabbit.Infra
         private void CreateDeadLetter()
         {
             Channel.QueueDeclare(
-                        queue: "deadletter.filateste",
+                        queue: _deadLetterQueueName,
                         durable: true,
                         exclusive: false,
                         autoDelete: false,
                         arguments: null);
 
             Channel.ExchangeDeclare(
-                        exchange: "deadletter.exchangeteste",
+                        exchange: _deadLetterExchangeName,
                         type: ExchangeType.Fanout,
                         durable: true,
                         autoDelete: false,
@@ -116,8 +119,8 @@ namespace Teste_Rabbit.Infra
 
             //para ligar a fila com a exchange:
             Channel.QueueBind(
-                "deadletter.filateste",
-                "deadletter.exchangeteste",
+                _deadLetterQueueName,
+                _deadLetterExchangeName,
                 "",
                 null);
         }

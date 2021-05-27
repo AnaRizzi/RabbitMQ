@@ -8,5 +8,7 @@
         public string VirtualHost { get; set; }
         public string QueueName { get; set; }
         public int Port { get; set; }
+        public string DeadLetterQueue { get; set; }
+        public string DeadLetterExchange { get; set; }
     }
 }

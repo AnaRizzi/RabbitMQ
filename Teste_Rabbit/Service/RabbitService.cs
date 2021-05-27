@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using RabbitMQ.Client.Events;
-using System;
 using Teste_Rabbit.Interfaces;
 using Teste_Rabbit.Models;
 
@@ -27,6 +26,7 @@ namespace Teste_Rabbit.Service
         public void ProcessMessage(RabbitRequest message, BasicDeliverEventArgs arg)
         {
             //é chamado pelo consumer, que já passa a mensagem
+            //(se der erro, é tratado pelo catch de dentro do Consumer)
             _logger.LogInformation("Processando a mensagem de " + message.Name);
 
             var response = new RabbitResponse()
@@ -37,9 +37,10 @@ namespace Teste_Rabbit.Service
 
             _producer.Publish(response);
 
+            //precisa avisar o rabbit de que a mensagem recebida foi finalizada, para que possa sair da fila
             _consumer.ProcessFinishMessage(arg);
-            _logger.LogInformation("Processo finalizado, mensagem publicada", response);
 
+            _logger.LogInformation("Processo finalizado, mensagem publicada", response);
         }
     }
 }

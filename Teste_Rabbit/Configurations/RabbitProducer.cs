@@ -8,5 +8,9 @@
         public string VirtualHost { get; set; }
         public string ExchangeName { get; set; }
         public int Port { get; set; }
+        public string RoutingKeyA { get; set; }
+        public string RoutingKeyB { get; set; }
+        public string QueueNameA { get; set; }
+        public string QueueNameB { get; set; }
     }
 }
